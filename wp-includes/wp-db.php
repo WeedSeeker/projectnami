@@ -569,6 +569,13 @@ class wpdb {
 	 */
 	protected $dbh;
 
+
+	/**
+	 * The Character Set
+	 * @var
+	 */
+	protected $dbcharset;
+
 	/**
 	 * A textual description of the last query/get_row/get_var call
 	 *
@@ -627,17 +634,19 @@ class wpdb {
 	 * the actual setting up of the class properties and connection
 	 * to the database.
 	 *
-	 * @link https://core.trac.wordpress.org/ticket/3354
+	 * @link  https://core.trac.wordpress.org/ticket/3354
 	 * @since 2.0.8
+	 *
+	 * @param string  $dbuser     MySQL database user
+	 * @param string  $dbpassword MySQL database password
+	 * @param string  $dbname     MySQL database name
+	 * @param string  $dbhost     MySQL database host
+	 * @param string  $dbcharset  Database charset
 	 *
 	 * @global string $wp_version
 	 *
-	 * @param string $dbuser     MySQL database user
-	 * @param string $dbpassword MySQL database password
-	 * @param string $dbname     MySQL database name
-	 * @param string $dbhost     MySQL database host
 	 */
-	public function __construct( $dbuser, $dbpassword, $dbname, $dbhost ) {
+	public function __construct( $dbuser, $dbpassword, $dbname, $dbhost, $dbcharset = 'UTF-8' ) {
 		register_shutdown_function( array( $this, '__destruct' ) );
 
 		if ( WP_DEBUG && WP_DEBUG_DISPLAY )
@@ -655,6 +664,7 @@ class wpdb {
 		$this->dbpassword = $dbpassword;
 		$this->dbname = $dbname;
 		$this->dbhost = $dbhost;
+		$this->dbcharset = $dbcharset;
 
 		// wp-config.php creation will manually connect when ready.
 		if ( defined( 'WP_SETUP_CONFIG' ) ) {
@@ -1446,9 +1456,9 @@ class wpdb {
 
 		ini_set( 'display_errors', 1 );
 		if ( WP_DEBUG ) {
-			$this->dbh = sqlsrv_connect( $this->dbhost, array( "Database"=> $this->dbname, "UID"=> $this->dbuser, "PWD"=> $this->dbpassword, 'ReturnDatesAsStrings'=>true, 'MultipleActiveResultSets'=> false) );
+			$this->dbh = sqlsrv_connect( $this->dbhost, array( "Database"=> $this->dbname, "UID"=> $this->dbuser, "PWD"=> $this->dbpassword, 'ReturnDatesAsStrings'=>true, 'MultipleActiveResultSets'=> false, 'CharacterSet' => $this->dbcharset) );
 		} else {
-			$this->dbh = sqlsrv_connect( $this->dbhost, array( "Database"=> $this->dbname, "UID"=> $this->dbuser, "PWD"=> $this->dbpassword, 'ReturnDatesAsStrings'=>true, 'MultipleActiveResultSets'=> false) );
+			$this->dbh = sqlsrv_connect( $this->dbhost, array( "Database"=> $this->dbname, "UID"=> $this->dbuser, "PWD"=> $this->dbpassword, 'ReturnDatesAsStrings'=>true, 'MultipleActiveResultSets'=> false, 'CharacterSet' => $this->dbcharset) );
 		}
 
 		if ( ! $this->dbh && $allow_bail ) {
